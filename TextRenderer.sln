@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35514.174
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo", "Demo\Demo.csproj", "{AF611503-25BD-4F8B-94C6-424BAB6878D4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FontParser", "FontParser\FontParser.csproj", "{FBA7E98E-D1B6-4BAA-813B-2A50680FB05A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FontParser.Tests", "FontParser.Tests\FontParser.Tests.csproj", "{47479500-36AC-4FBC-B5DA-6CC58198112A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{AF611503-25BD-4F8B-94C6-424BAB6878D4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AF611503-25BD-4F8B-94C6-424BAB6878D4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AF611503-25BD-4F8B-94C6-424BAB6878D4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AF611503-25BD-4F8B-94C6-424BAB6878D4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FBA7E98E-D1B6-4BAA-813B-2A50680FB05A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FBA7E98E-D1B6-4BAA-813B-2A50680FB05A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FBA7E98E-D1B6-4BAA-813B-2A50680FB05A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FBA7E98E-D1B6-4BAA-813B-2A50680FB05A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{47479500-36AC-4FBC-B5DA-6CC58198112A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{47479500-36AC-4FBC-B5DA-6CC58198112A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{47479500-36AC-4FBC-B5DA-6CC58198112A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{47479500-36AC-4FBC-B5DA-6CC58198112A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
