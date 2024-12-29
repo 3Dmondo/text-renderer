@@ -2,6 +2,7 @@
 
 internal class Glyph
 {
+  public required int index { get; init; }
   public required GlyphHeader Header { get; init; }
   public required int[] XCoordinates { get; init; }
   public required int[] YCoordinates { get; init; }

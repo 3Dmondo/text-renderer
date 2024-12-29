@@ -50,6 +50,7 @@ public class Parser
         }
         return new GlyphData
         {
+          GlyphIndex = pair.First.index,
           AdvanceWidth = pair.Second.AdvanceWidth,
           LeftSideBearing = pair.Second.LeftSideBearing,
           MinX = pair.First.Header.XMin,
@@ -337,7 +338,7 @@ public class Parser
       yield return ParseGlyph(reader, glyphOffsets, i);
   }
 
-  private static Glyph ParseGlyph(Reader reader, IList<uint> glyphOffsets, int glyphIndex)
+  internal static Glyph ParseGlyph(Reader reader, IList<uint> glyphOffsets, int glyphIndex)
   {
     reader.Seek(glyphOffsets[glyphIndex]);
     var glyphHeader = new GlyphHeader(
@@ -348,12 +349,12 @@ public class Parser
       (short)reader.ReadUInt16());
 
     if (glyphHeader.NumberOfContours >= 0)
-      return ParseSimpleGlyph(reader, glyphHeader);
+      return ParseSimpleGlyph(reader, glyphHeader, glyphIndex);
     else
-      return ParseCompoundGlyph(reader, glyphHeader, glyphOffsets);
+      return ParseCompoundGlyph(reader, glyphHeader, glyphOffsets, glyphIndex);
   }
 
-  private static Glyph ParseSimpleGlyph(Reader reader, GlyphHeader glyphHeader)
+  private static Glyph ParseSimpleGlyph(Reader reader, GlyphHeader glyphHeader, int glyphIndex)
   {
     Span<ushort> endPtsOfContours = stackalloc ushort[glyphHeader.NumberOfContours];
     reader.ReadUInt16(endPtsOfContours);
@@ -392,6 +393,7 @@ public class Parser
 
     return new Glyph
     {
+      index = glyphIndex,
       Header = glyphHeader,
       XCoordinates = XCoordinates.ToArray(),
       YCoordinates = YCoordinates.ToArray(),
@@ -425,7 +427,8 @@ public class Parser
   private static Glyph ParseCompoundGlyph(
     Reader reader,
     GlyphHeader glyphHeader,
-    IList<uint> glyphOffsets)
+    IList<uint> glyphOffsets,
+    int glyphIndex)
   {
     bool moreComponents = true;
     var xCoordinates = new List<int>();
@@ -439,7 +442,7 @@ public class Parser
       if (!flag.HasFlag(CompoundGlyphFlag.ARGS_ARE_XY_VALUES))
         throw new NotImplementedException("Compound glyphs referencing points is not implemented");
 
-      var glyphIndex = reader.ReadUInt16();
+      var componentGlyphIndex = reader.ReadUInt16();
 
       var readWords = flag.HasFlag(CompoundGlyphFlag.ARG_1_AND_2_ARE_WORDS);
       int arg1 = readWords
@@ -474,31 +477,18 @@ public class Parser
         d = reader.ReadUInt16().ShortFracToFloat();
       }
 
-      const double minimum = 33.0 / 65536.0;
-
-      var m = Math.Max(Math.Abs(a), Math.Abs(b));
-      if (Math.Abs(Math.Abs(a) - Math.Abs(c)) < minimum) m = 2.0 * m;
-
-      var n = Math.Max(Math.Abs(c), Math.Abs(d));
-      if (Math.Abs(Math.Abs(b) - Math.Abs(d)) < minimum) n = 2.0 * n;
-
-      a = a / m;
-      b = b / n;
-      c = c / m;
-      d = d / n;
-
       var position = reader.Position;
 
-      var component = ParseGlyph(reader, glyphOffsets, glyphIndex);
+      var component = ParseGlyph(reader, glyphOffsets, componentGlyphIndex);
 
       ushort currentLength = (ushort)onCurve.Count;
 
       for (int i = 0; i < component.OnCurve.Length; i++)
       {
-        var x = m * (a * component.XCoordinates[i] + c * component.YCoordinates[i] + e);
-        xCoordinates.Add((int)x);
-        var y = n * (b * component.XCoordinates[i] + d * component.YCoordinates[i] + f);
-        yCoordinates.Add((int)y);
+        var x = (int)(a * component.XCoordinates[i] + c * component.YCoordinates[i] + e);
+        xCoordinates.Add(x);
+        var y = (int)(b * component.XCoordinates[i] + d * component.YCoordinates[i] + f);
+        yCoordinates.Add(y);
         onCurve.Add(component.OnCurve[i]);
       }
 
@@ -510,6 +500,7 @@ public class Parser
 
     return new Glyph
     {
+      index = glyphIndex,
       Header = glyphHeader,
       XCoordinates = xCoordinates.ToArray(),
       YCoordinates = yCoordinates.ToArray(),

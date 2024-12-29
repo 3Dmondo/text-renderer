@@ -1,4 +1,6 @@
-﻿namespace FontParser;
+﻿using System.Diagnostics;
+
+namespace FontParser;
 
 public class FontData
 {
@@ -25,8 +27,10 @@ public class FontData
   }
 }
 
+[DebuggerDisplay("GlyphIndex = {GlyphIndex}")]
 public class GlyphData
 {
+  public required int GlyphIndex { get; init; }
   public required Point[][] Contours { get; init; }
   public required int MinX { get; init; }
   public required int MinY { get; init; }

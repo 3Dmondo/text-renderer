@@ -21,6 +21,11 @@ public class ParserTests
       .Where(f => f.EndsWith(".ttf", StringComparison.InvariantCultureIgnoreCase))
       .Select(f => Path.GetFileName(f));
 
+  private static object[] FailingFonts =
+  {
+    new object[] { "corbell.ttf", 748 }
+  };
+
   private static string FilePath(string fileName) => Path.Combine(Setup.FontsPath, fileName);
 
   [TestCaseSource(nameof(FontFileNames))]
@@ -145,19 +150,61 @@ public class ParserTests
 
     var glyphs = Parser.ParseGlyf(reader, loca).ToArray();
 
-    for (int i = 0; i < glyphs.Length; i++)
+    Assert.Multiple(() =>
     {
-      var glyph = glyphs[i];
-      Assert.That(glyph, Is.Not.Null);
-      if (glyph.Header.NumberOfContours > 0)
+      for (int i = 0; i < glyphs.Length; i++)
       {
-        Assert.That(glyph.XCoordinates.Max(), Is.AtMost(glyph.Header.XMax), $"x coordinate greater than Max at index {i}");
-        Assert.That(glyph.XCoordinates.Min(), Is.AtLeast(glyph.Header.XMin), $"x coordinate smaller than Min at index {i}");
-        Assert.That(glyph.YCoordinates.Max(), Is.AtMost(glyph.Header.YMax), $"y coordinate greater than Max at index {i}");
-        Assert.That(glyph.YCoordinates.Min(), Is.AtLeast(glyph.Header.YMin), $"y coordinate smaller than Min at index {i}");
+        var glyph = glyphs[i];
+        Assert.That(glyph, Is.Not.Null);
+        Assert.That(glyph.YCoordinates.Length, Is.EqualTo(glyph.XCoordinates.Length));
+        Assert.That(glyph.YCoordinates.Length, Is.EqualTo(glyph.OnCurve.Length));
+        if (glyph.YCoordinates.Length > 0)
+        {
+          Assert.That(glyph.XCoordinates.Max(), Is.AtMost(glyph.Header.XMax), $"x coordinate greater than Max at index {glyph.index}");
+          Assert.That(glyph.XCoordinates.Min(), Is.AtLeast(glyph.Header.XMin), $"x coordinate smaller than Min at index {glyph.index}");
+          Assert.That(glyph.YCoordinates.Max(), Is.AtMost(glyph.Header.YMax), $"y coordinate greater than Max at index {glyph.index}");
+          Assert.That(glyph.YCoordinates.Min(), Is.AtLeast(glyph.Header.YMin), $"y coordinate smaller than Min at index {glyph.index}");
+        }
       }
-    }
+    });
+  }
 
+  [TestCaseSource(nameof(FailingFonts))]
+  public void ParseGlyph(string fileName, int index)
+  {
+    var offset = GetTableOffset("maxp", fileName);
+    using var reader = new Reader(FilePath(fileName));
+    var maxp = Parser.ParseMaxp(reader, offset);
+
+    offset = GetTableOffset("head", fileName);
+    var head = Parser.ParseHead(reader, offset);
+
+    offset = GetTableOffset("loca", fileName);
+    var loca = Parser.ParseLoca(
+      reader,
+      offset,
+      head.IndexToLocFormat,
+      maxp.NumGlyphs,
+      GetTableOffset("glyf", fileName))
+      .ToArray();
+
+    var glyph = Parser.ParseGlyph(reader, loca, index);
+
+    Assert.That(glyph, Is.Not.Null);
+    Assert.That(glyph.YCoordinates.Length, Is.EqualTo(glyph.XCoordinates.Length));
+
+    var points = glyph.XCoordinates
+      .Zip(glyph.YCoordinates, glyph.OnCurve)
+      .Select((p, i) => (i, x: p.First, y: p.Second, onCurve: p.Third))
+      .Where(x => x.onCurve);
+
+    foreach (var p in points)
+    {
+      Assert.That(p.x, Is.AtMost(glyph.Header.XMax).Within(1), $"x coordinate greater than Max of point {p.i}");
+      Assert.That(p.x, Is.AtLeast(glyph.Header.XMin).Within(1), $"x coordinate smaller than Min of point {p.i}");
+      Assert.That(p.y, Is.AtMost(glyph.Header.YMax).Within(1), $"y coordinate greater than Max of point {p.i}");
+      Assert.That(p.y, Is.AtLeast(glyph.Header.YMin).Within(1), $"y coordinate smaller than Min of point {p.i}");
+    }
   }
 
   private static uint GetTableOffset(string tag, string fileName)
