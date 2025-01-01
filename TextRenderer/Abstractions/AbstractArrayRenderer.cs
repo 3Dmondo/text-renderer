@@ -11,44 +11,48 @@ internal abstract class AbstractArrayRenderer
   protected abstract Shader Shader { get; }
 
   protected void InitBuffers(
-    float[] Vertices,
+    float[] vertices,
     int stride,
-    params VertexAttribPointerArgs[] vertexAttribPointerArgs)
+    params (int size, int offset)[] vertexAttribPointerArgs)
   {
-    NumberOfVertices = Vertices.Length / stride;
+    NumberOfVertices = vertices.Length / stride;
+
     VertexBufferObject = GL.GenBuffer();
     GL.BindBuffer(BufferTarget.ArrayBuffer, VertexBufferObject);
     GL.BufferData(
       BufferTarget.ArrayBuffer,
-      Vertices.Length * sizeof(float),
-      Vertices,
+      vertices.Length * sizeof(float),
+      vertices,
       BufferUsageHint.StaticDraw);
+
     VertexArrayObject = GL.GenVertexArray();
     GL.BindVertexArray(VertexArrayObject);
     for (int i = 0; i < vertexAttribPointerArgs.Length; i++)
     {
       var args = vertexAttribPointerArgs[i];
       GL.VertexAttribPointer(
-        args.Index,
-        args.Size,
+        i,
+        args.size,
         VertexAttribPointerType.Float,
         false,
         stride * sizeof(float),
-        args.Offset);
+        args.offset);
       GL.EnableVertexAttribArray(i);
     }
+
     GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
     GL.BindVertexArray(0);
   }
 
-  public void Render(Matrix4 projectionModel, PrimitiveType primitiveType)
+  public void Render(Matrix4 model, Matrix4 projection, PrimitiveType primitiveType)
   {
     Shader.Use();
-    GL.UniformMatrix4(0, false, ref projectionModel);
+    GL.UniformMatrix4(0, false, ref model);
+    GL.UniformMatrix4(1, false, ref projection);
     GL.BindVertexArray(VertexArrayObject);
-    GL.DrawArrays(PrimitiveType.Triangles, 0, NumberOfVertices);
-    GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
+    GL.DrawArrays(primitiveType, 0, NumberOfVertices);
     GL.BindVertexArray(0);
+    GL.UseProgram(0);
   }
 
 }

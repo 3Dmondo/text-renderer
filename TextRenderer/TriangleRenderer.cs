@@ -7,22 +7,15 @@ namespace TextRenderer;
 
 internal class TriangleRenderer
 {
-  private static Lazy<Shader> SplineShader =
-    new Lazy<Shader>(() => new Shader("Spline"));
-
   private static Lazy<Shader> QuadShader =
     new Lazy<Shader>(() => new Shader("Quad"));
-
-  private float[] SplineVertices;
-  private int SplineVertexBufferObject;
-  private int SplineVertexArrayObject;
 
   private float[] QuadVertices;
   private int QuadVertexBufferObject;
   private int QuadVertexArrayObject;
 
   private TriangleFanRenderer TriangleFanRenderer;
-  private SplineRenderer SplineRenderer;
+  private SplineRenderer SplineRenderer2;
 
 
   public TriangleRenderer(GlyphData glyphData)
@@ -32,7 +25,7 @@ internal class TriangleRenderer
       glyphData.MinY,
       glyphData.Contours);
 
-    SplineRenderer = new SplineRenderer(glyphData);
+    SplineRenderer2 = new SplineRenderer(glyphData);
 
     InitializeQuad(glyphData);
   }
@@ -74,18 +67,31 @@ internal class TriangleRenderer
 
   public void OnRender(Vector2 position, float scaleFactor, Vector2i windowSize)
   {
+    //GL.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Line);
+
+    var scale = Matrix4.CreateScale(scaleFactor, scaleFactor, 1.0f);
+    var translate = Matrix4.CreateTranslation(position.X, position.Y, 0f);
+    var model = scale * translate;
+
+    var projection = Matrix4.CreateOrthographicOffCenter(
+      0.0f,
+      windowSize.X,
+      0.0f,
+      windowSize.Y,
+      -1.0f,
+      1.0f);
 
     ConfigureSetencilTest();
 
     TriangleFanRenderer.OnRender(position, scaleFactor, windowSize);
-    SplineRenderer.OnRender(position, scaleFactor, windowSize);
+    SplineRenderer2.Render(model, projection, PrimitiveType.Triangles);
 
     ConfigureStencilTestForRendering();
-    //GL.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Line);
     RenderQuad(position, scaleFactor, windowSize);
-    //GL.PolygonMode(TriangleFace.FrontAndBack,PolygonMode.Fill);
 
     GL.Disable(EnableCap.StencilTest);
+
+    //GL.PolygonMode(TriangleFace.FrontAndBack,PolygonMode.Fill);
   }
 
   private static void ConfigureStencilTestForRendering()
@@ -133,47 +139,4 @@ internal class TriangleRenderer
     GL.UseProgram(0);
   }
 
-  private void RenderSpline(Vector2 position, float scaleFactor, Vector2i windowSize)
-  {
-    var scale = Matrix4.CreateScale(scaleFactor, scaleFactor, 1.0f);
-    var translate = Matrix4.CreateTranslation(position.X, position.Y, 0f);
-    var model = scale * translate;
-
-    var projection = Matrix4.CreateOrthographicOffCenter(
-      0.0f,
-      windowSize.X,
-      0.0f,
-      windowSize.Y,
-      -1.0f,
-      1.0f);
-
-    SplineShader.Value.Use();
-    GL.UniformMatrix4(0, false, ref model);
-    GL.UniformMatrix4(1, false, ref projection);
-
-    GL.BindVertexArray(SplineVertexArrayObject);
-
-    //GL.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Line);
-
-    GL.DrawArrays(PrimitiveType.Triangles, 0, SplineVertices.Length / 2);
-
-    //GL.PolygonMode(TriangleFace.FrontAndBack,PolygonMode.Fill);
-
-    GL.BindVertexArray(0);
-    GL.UseProgram(0);
-  }
-
-  private static IEnumerable<float> GetTriangles(Point[] c)
-  {
-    for (int i = 0; i < c.Length - 1; i += 2)
-    {
-      Debug.Assert(c[i].OnCurve);
-      yield return c[i].X;
-      yield return c[i].Y;
-      yield return c[i + 1].X;
-      yield return c[i + 1].Y;
-      yield return c[(i + 2) % c.Length].X;
-      yield return c[(i + 2) % c.Length].Y;
-    }
-  }
 }
