@@ -17,6 +17,7 @@ internal class Window : GameWindow
       ClientSize = new Vector2i(800, 600),
       Title = "TestApplication",
       Flags = ContextFlags.ForwardCompatible,
+      NumberOfSamples = 4
     })
   { }
 

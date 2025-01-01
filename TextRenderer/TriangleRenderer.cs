@@ -22,6 +22,7 @@ internal class TriangleRenderer
   private int QuadVertexArrayObject;
 
   private TriangleFanRenderer TriangleFanRenderer;
+  private SplineRenderer SplineRenderer;
 
 
   public TriangleRenderer(GlyphData glyphData)
@@ -30,7 +31,9 @@ internal class TriangleRenderer
       glyphData.MinX,
       glyphData.MinY,
       glyphData.Contours);
-    InitializeSpline(glyphData);
+
+    SplineRenderer = new SplineRenderer(glyphData);
+
     InitializeQuad(glyphData);
   }
 
@@ -69,40 +72,13 @@ internal class TriangleRenderer
     GL.BindVertexArray(0);
   }
 
-  private void InitializeSpline(GlyphData glyphData)
-  {
-    SplineVertices = glyphData.Contours.SelectMany(GetTriangles).ToArray();
-
-    SplineVertexArrayObject = GL.GenVertexArray();
-    GL.BindVertexArray(SplineVertexArrayObject);
-    SplineVertexBufferObject = GL.GenBuffer();
-    GL.BindBuffer(BufferTarget.ArrayBuffer, SplineVertexBufferObject);
-
-    GL.BufferData(
-      BufferTarget.ArrayBuffer,
-      SplineVertices.Length * sizeof(float),
-      SplineVertices,
-      BufferUsageHint.StaticDraw);
-
-    GL.VertexAttribPointer(
-      0,
-      2,
-      VertexAttribPointerType.Float,
-      false,
-      2 * sizeof(float),
-      0);
-    GL.EnableVertexAttribArray(0);
-
-    GL.BindBuffer(BufferTarget.ArrayBuffer, 0);
-    GL.BindVertexArray(0);
-  }
-
   public void OnRender(Vector2 position, float scaleFactor, Vector2i windowSize)
   {
+
     ConfigureSetencilTest();
 
     TriangleFanRenderer.OnRender(position, scaleFactor, windowSize);
-    RenderSpline(position, scaleFactor, windowSize);
+    SplineRenderer.OnRender(position, scaleFactor, windowSize);
 
     ConfigureStencilTestForRendering();
     //GL.PolygonMode(TriangleFace.FrontAndBack, PolygonMode.Line);
@@ -200,18 +176,4 @@ internal class TriangleRenderer
       yield return c[(i + 2) % c.Length].Y;
     }
   }
-
-  private static IEnumerable<float> GetOnCurve(Point[] c)
-  {
-    foreach (Point p in c)
-      if (p.OnCurve)
-      {
-        yield return p.X;
-        yield return p.Y;
-      }
-    var first = c[0];
-    yield return first.X;
-    yield return first.Y;
-  }
-
 }
