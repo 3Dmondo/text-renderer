@@ -5,7 +5,7 @@ using OpenTK.Windowing.Desktop;
 
 namespace TextRenderer;
 
-public class CharRenderer
+public class SingleCharRenderer
 {
   private const string FontName = "arial.ttf"; //"PARCHM.TTF";
 
@@ -21,7 +21,7 @@ public class CharRenderer
   private Vector2 Position { get; set; }
   private Vector2 MousePosition { get; set; }
 
-  public CharRenderer(GameWindow window)
+  public SingleCharRenderer(GameWindow window)
   {
     window.RenderFrame += OnRenderFrame;
     window.TextInput += OnTextInput;
@@ -45,8 +45,6 @@ public class CharRenderer
   {
     Scale *= 1.0f + args.OffsetY * 0.1f;
   }
-
-
 
   private void OnUpdateFrame(FrameEventArgs args)
   {

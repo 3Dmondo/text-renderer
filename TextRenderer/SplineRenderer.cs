@@ -1,5 +1,4 @@
 ﻿using FontParser;
-using System.Diagnostics;
 using TextRenderer.Abstractions;
 
 namespace TextRenderer;
@@ -18,13 +17,13 @@ internal class SplineRenderer : AbstractArrayRenderer
 
   private static IEnumerable<float> GetTriangles(Point[] c)
   {
-    for (int i = 0; i < c.Length - 1; i += 2)
+    var start = c.Select((p, i) => (p, i)).First(pi => pi.p.OnCurve).i;
+    for (int i = start; i < c.Length + start - 1; i += 2)
     {
-      Debug.Assert(c[i].OnCurve); //TODO: handle glyphs starting off curve
-      yield return c[i].X;
-      yield return c[i].Y;
-      yield return c[i + 1].X;
-      yield return c[i + 1].Y;
+      yield return c[i % c.Length].X;
+      yield return c[i % c.Length].Y;
+      yield return c[(i + 1) % c.Length].X;
+      yield return c[(i + 1) % c.Length].Y;
       yield return c[(i + 2) % c.Length].X;
       yield return c[(i + 2) % c.Length].Y;
     }

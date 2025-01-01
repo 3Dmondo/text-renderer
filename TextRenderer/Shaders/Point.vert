@@ -7,7 +7,7 @@ out vec4 fragColor;
 void main()
 {
   gl_Position = projection * model * vec4(position, 0, 1.0);
-  gl_PointSize = 5.0;
+  gl_PointSize = 7.0;
   float red = onCurve == 0 ? 1.0 : 0.0; 
   float blue = onCurve > 0 ? 1.0 : 0;
   fragColor = vec4(red,0.0,blue,1.0);

@@ -39,20 +39,19 @@ internal class GlGlyph
       1.0f);
 
     ConfigureSetencilTest();
-
     foreach (var triangleFanRenderer in TriangleFanRenderers)
       triangleFanRenderer.Render(model, projection, PrimitiveType.TriangleFan);
     SplineRenderer.Render(model, projection, PrimitiveType.Triangles);
 
-    ConfigureStencilTestForRendering();
+    ConfigureStencilRendering();
     QuadRenderer.Render(model, projection, PrimitiveType.Triangles);
 
     GL.Disable(EnableCap.StencilTest);
 
-    PointRenderer.Render(model, projection, PrimitiveType.Points);
+    //PointRenderer.Render(model, projection, PrimitiveType.Points);
   }
 
-  private static void ConfigureStencilTestForRendering()
+  private static void ConfigureStencilRendering()
   {
     GL.ColorMask(true, true, true, true);
     GL.DepthMask(true);
