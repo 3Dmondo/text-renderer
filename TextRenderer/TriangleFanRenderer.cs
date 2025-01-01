@@ -1,13 +1,15 @@
 ﻿using FontParser;
 using OpenTK.Graphics.OpenGL4;
 using OpenTK.Mathematics;
+using TextRenderer.Abstractions;
 
 namespace TextRenderer;
 
-internal class TriangleFanRenderer
+internal class TriangleFanRenderer : AbstractArrayRenderer
 {
   private static Lazy<Shader> TriangleFanShader =
-    new Lazy<Shader>(() => new Shader("Triangle"));
+    new Lazy<Shader>(() => new Shader("TriangleFan"));
+  protected override Shader Shader => TriangleFanShader.Value;
 
   private float[][] TriangleFanVertices;
   private int[] TriangleFanVertexBufferObject;
