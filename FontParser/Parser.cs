@@ -45,7 +45,7 @@ public class Parser
         {
           var endPointOfContour = pair.First.EndPtsOfContours[i];
           var lastIndex = endPointOfContour + 1;
-          contours[i] = points[firstIndex..lastIndex];
+          contours[i] = points[firstIndex..lastIndex].AddImpliedPoints().ToArray();
           firstIndex = lastIndex;
         }
         return new GlyphData

@@ -40,4 +40,4 @@ public class GlyphData
   public int LeftSideBearing { get; init; }
 }
 
-public readonly record struct Point(int X, int Y, bool OnCurve);
+public readonly record struct Point(float X, float Y, bool OnCurve);
