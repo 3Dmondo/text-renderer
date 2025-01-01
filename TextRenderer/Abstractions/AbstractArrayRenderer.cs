@@ -36,7 +36,7 @@ internal abstract class AbstractArrayRenderer
         VertexAttribPointerType.Float,
         false,
         stride * sizeof(float),
-        args.offset);
+        args.offset * sizeof(float));
       GL.EnableVertexAttribArray(i);
     }
 
@@ -44,7 +44,7 @@ internal abstract class AbstractArrayRenderer
     GL.BindVertexArray(0);
   }
 
-  public void Render(Matrix4 model, Matrix4 projection, PrimitiveType primitiveType)
+  public virtual void Render(Matrix4 model, Matrix4 projection, PrimitiveType primitiveType)
   {
     Shader.Use();
     GL.UniformMatrix4(0, false, ref model);
