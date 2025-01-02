@@ -27,7 +27,7 @@ public class SingleCharRenderer
     window.TextInput += OnTextInput;
     window.FileDrop += OnFileDrop;
     window.UpdateFrame += OnUpdateFrame;
-    window.MouseWheel += OnMouseWeel;
+    window.MouseWheel += OnMouseWheel;
     window.MouseMove += OnMouseMove;
     FontData = Parser.ParseFont(FontPath);
     Window = window;
@@ -41,7 +41,7 @@ public class SingleCharRenderer
       Position += new Vector2(args.Delta.X, -args.DeltaY);
   }
 
-  private void OnMouseWeel(MouseWheelEventArgs args)
+  private void OnMouseWheel(MouseWheelEventArgs args)
   {
     Scale *= 1.0f + args.OffsetY * 0.1f;
   }
@@ -56,9 +56,16 @@ public class SingleCharRenderer
     }
   }
 
+  int frameCount = 0;
   private void OnRenderFrame(FrameEventArgs frameEventArgs)
   {
     GlGlyph?.OnRender(Position, Scale, Window.Size);
+    var fps = 1.0 / frameEventArgs.Time;
+    if (++frameCount % 1000 == 0)
+    {
+      frameCount = 0;
+      Console.WriteLine($"{fps:0.0}");
+    }
   }
 
   private void OnTextInput(TextInputEventArgs textInputEventArgs)
